@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2 id="greet"></h2>
+  <input id="city" placeholder="Enter city">
+  <button onclick="getWeather()">Search</button>
+  <p id="result"></p>
+
+  <script>
+    document.getElementById("greet").innerText =
+      "Hello " + localStorage.getItem("userName");
+
+    async function getWeather() {
+      const city = document.getElementById('city').value;
+      const res = await fetch(`/weather?city=${city}`);
+      const data = await res.json();
+      document.getElementById('result').innerText =
+        `${data.name}: ${data.main.temp}°C`;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login | Weather App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container login-box">
+  <h2>Login</h2>
+
+  <input type="email" id="email" placeholder="Enter email" required />
+
+  <div id="nameBox" style="display:none;">
+    <input type="text" id="name" placeholder="Enter name" />
+  </div>
+
+  <button onclick="handleLogin()">Continue</button>
+
+  <p id="message"></p>
+</div>
+
+<script>
+async function handleLogin() {
+  const email = document.getElementById("email").value;
+  const nameInput = document.getElementById("name").value;
+  const nameBox = document.getElementById("nameBox");
+  const msg = document.getElementById("message");
+
+  if (!email) {
+    msg.innerText = "Email required";
+    return;
+  }
+
+  try {
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, name: nameInput })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "login") {
+      localStorage.setItem("userName", data.name);
+      window.location.href = "home.html";
+    }
+
+    else if (data.status === "new_user") {
+      nameBox.style.display = "block";
+      msg.innerText = "New user! Enter your name and click Continue again.";
+    }
+
+    else if (data.status === "signup") {
+      localStorage.setItem("userName", data.name);
+      window.location.href = "home.html";
+    }
+
+  } catch (err) {
+    msg.innerText = "Login failed!";
+    console.error(err);
+  }
+}
+</script>
+
+</body>
+</html>
