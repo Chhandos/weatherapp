@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const TABLE_NAME = "users";
-const WEATHER_KEY = process.env.WEATHER_KEY || "YOUR_KEY_HERE";
+const WEATHER_KEY = "fa89e48d900c4968a1e31153240107";
 const REGION = process.env.AWS_REGION || "ap-south-1";
 
 // DynamoDB auth via EC2 IAM Role
