@@ -1,22 +1,107 @@
 <!DOCTYPE html>
-<html>
-<body>
-  <h2 id="greet"></h2>
-  <input id="city" placeholder="Enter city">
-  <button onclick="getWeather()">Search</button>
-  <p id="result"></p>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Weather — Home</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="body" class="page-home">
+  <div class="top-bar">
+    <div class="brand">Weather App</div>
+    <div class="greet" id="greet">Hello</div>
+    <button id="logoutBtn" class="btn small">Logout</button>
+  </div>
 
-  <script>
-    document.getElementById("greet").innerText =
-      "Hello " + localStorage.getItem("userName");
+  <main class="container">
+    <div class="search-card card">
+      <input id="city" placeholder="Enter city (e.g., Delhi)" />
+      <button id="searchBtn" class="btn">Search</button>
+    </div>
 
-    async function getWeather() {
-      const city = document.getElementById('city').value;
-      const res = await fetch(`/weather?city=${city}`);
-      const data = await res.json();
-      document.getElementById('result').innerText =
-        `${data.name}: ${data.main.temp}°C`;
-    }
-  </script>
+    <div id="resultArea" class="card result hidden">
+      <div class="weather-header">
+        <img id="icon" src="" alt="icon" />
+        <div>
+          <h2 id="cityName"></h2>
+          <div id="conditionText" class="muted"></div>
+        </div>
+      </div>
+      <div class="temp-large"><span id="tempC"></span>°C</div>
+      <div id="extra" class="muted small"></div>
+    </div>
+
+    <p id="hint" class="muted small">Tip: Try city names like "Delhi", "London", "New York".</p>
+  </main>
+
+<script>
+const greetEl = document.getElementById('greet');
+const userName = localStorage.getItem('userName');
+if (!userName) window.location.href = 'index.html';
+greetEl.innerText = 'Hello ' + userName;
+
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('userName');
+  localStorage.removeItem('userEmail');
+  window.location.href = 'index.html';
+});
+
+const resultArea = document.getElementById('resultArea');
+const cityNameEl = document.getElementById('cityName');
+const tempEl = document.getElementById('tempC');
+const conditionEl = document.getElementById('conditionText');
+const iconEl = document.getElementById('icon');
+const extraEl = document.getElementById('extra');
+
+function setTheme(condition, is_day) {
+  const body = document.getElementById('body');
+  body.className = 'page-home'; // reset
+  const text = (condition||'').toLowerCase();
+  if (text.includes('rain') || text.includes('drizzle') || text.includes('shower')) {
+    body.classList.add('rainy');
+  } else if (text.includes('cloud') || text.includes('overcast')) {
+    body.classList.add('cloudy');
+  } else if ((text.includes('sun') || text.includes('clear')) && Number(is_day) === 1) {
+    body.classList.add('sunny');
+  } else {
+    body.classList.add('night');
+  }
+}
+
+async function fetchWeather(city) {
+  const res = await fetch(`/weather?city=${encodeURIComponent(city)}`);
+  return res.json();
+}
+
+document.getElementById('searchBtn').addEventListener('click', async () => {
+  const city = document.getElementById('city').value.trim();
+  if (!city) return alert('Enter city name');
+
+  const data = await fetchWeather(city);
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+
+  // Populate UI
+  cityNameEl.innerText = data.city;
+  tempEl.innerText = data.temp_c;
+  conditionEl.innerText = data.condition;
+  iconEl.src = data.icon || '';
+  extraEl.innerText = data.is_day ? 'Daytime' : 'Nighttime';
+  resultArea.classList.remove('hidden');
+
+  // Set theme based on condition
+  setTheme(data.condition, data.is_day);
+});
+
+// If user saved a last city in localStorage, auto search it
+const lastCity = localStorage.getItem('lastCity');
+if (lastCity) {
+  document.getElementById('city').value = lastCity;
+  document.getElementById('searchBtn').click();
+}
+</script>
 </body>
 </html>
